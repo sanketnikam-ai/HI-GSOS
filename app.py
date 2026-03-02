@@ -7,32 +7,63 @@ import time
 
 st.set_page_config(page_title="🦟 Mosquito Trends India", layout="wide")
 
-# ── Indian States by Region ──────────────────────────────────────────────────
+# ── Indian States by Zone (7 zones) ─────────────────────────────────────────
 REGIONS = {
-    "North": ["Delhi", "Uttar Pradesh", "Uttarakhand", "Himachal Pradesh",
-              "Punjab", "Haryana", "Jammu and Kashmir", "Rajasthan"],
-    "East":  ["West Bengal", "Bihar", "Jharkhand", "Odisha",
-              "Assam", "Meghalaya", "Manipur", "Mizoram",
-              "Nagaland", "Tripura", "Arunachal Pradesh", "Sikkim"],
-    "West":  ["Maharashtra", "Gujarat", "Goa"],
-    "Central": ["Madhya Pradesh", "Chhattisgarh"],
-    "South": ["Karnataka", "Tamil Nadu", "Andhra Pradesh", "Telangana",
-              "Kerala"],
+    "East": [
+        "Arunachal Pradesh", "Assam", "Bihar", "Jharkhand", "Manipur",
+        "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Sikkim",
+        "Tripura", "West Bengal",
+    ],
+    "North 1": ["Rajasthan", "Uttar Pradesh", "Uttarakhand"],
+    "North 2": [
+        "Chandigarh", "Delhi", "Haryana", "Himachal Pradesh",
+        "Jammu and Kashmir", "Punjab",
+    ],
+    "South 1": [
+        "Andaman and Nicobar Islands", "Karnataka", "Kerala",
+        "Puducherry", "Tamil Nadu",
+    ],
+    "South 2": ["Andhra Pradesh", "Telangana"],
+    "West 1":  ["Chhattisgarh", "Dadra and Nagar Haveli", "Gujarat", "Madhya Pradesh"],
+    "West 2":  ["Goa", "Maharashtra"],
 }
 
 # Geo codes for pytrends (state-level India sub-regions)
 GEO_CODES = {
-    "Andhra Pradesh": "IN-AP", "Arunachal Pradesh": "IN-AR",
-    "Assam": "IN-AS", "Bihar": "IN-BR", "Chhattisgarh": "IN-CT",
-    "Goa": "IN-GA", "Gujarat": "IN-GJ", "Haryana": "IN-HR",
-    "Himachal Pradesh": "IN-HP", "Jammu and Kashmir": "IN-JK",
-    "Jharkhand": "IN-JH", "Karnataka": "IN-KA", "Kerala": "IN-KL",
-    "Madhya Pradesh": "IN-MP", "Maharashtra": "IN-MH",
-    "Manipur": "IN-MN", "Meghalaya": "IN-ML", "Mizoram": "IN-MZ",
-    "Nagaland": "IN-NL", "Odisha": "IN-OR", "Punjab": "IN-PB",
-    "Rajasthan": "IN-RJ", "Sikkim": "IN-SK", "Tamil Nadu": "IN-TN",
-    "Telangana": "IN-TG", "Tripura": "IN-TR", "Uttar Pradesh": "IN-UP",
-    "Uttarakhand": "IN-UT", "West Bengal": "IN-WB", "Delhi": "IN-DL",
+    "Andaman and Nicobar Islands": "IN-AN",
+    "Andhra Pradesh":        "IN-AP",
+    "Arunachal Pradesh":     "IN-AR",
+    "Assam":                 "IN-AS",
+    "Bihar":                 "IN-BR",
+    "Chandigarh":            "IN-CH",
+    "Chhattisgarh":          "IN-CT",
+    "Dadra and Nagar Haveli":"IN-DN",
+    "Delhi":                 "IN-DL",
+    "Goa":                   "IN-GA",
+    "Gujarat":               "IN-GJ",
+    "Haryana":               "IN-HR",
+    "Himachal Pradesh":      "IN-HP",
+    "Jammu and Kashmir":     "IN-JK",
+    "Jharkhand":             "IN-JH",
+    "Karnataka":             "IN-KA",
+    "Kerala":                "IN-KL",
+    "Madhya Pradesh":        "IN-MP",
+    "Maharashtra":           "IN-MH",
+    "Manipur":               "IN-MN",
+    "Meghalaya":             "IN-ML",
+    "Mizoram":               "IN-MZ",
+    "Nagaland":              "IN-NL",
+    "Odisha":                "IN-OR",
+    "Puducherry":            "IN-PY",
+    "Punjab":                "IN-PB",
+    "Rajasthan":             "IN-RJ",
+    "Sikkim":                "IN-SK",
+    "Tamil Nadu":            "IN-TN",
+    "Telangana":             "IN-TG",
+    "Tripura":               "IN-TR",
+    "Uttar Pradesh":         "IN-UP",
+    "Uttarakhand":           "IN-UT",
+    "West Bengal":           "IN-WB",
 }
 
 KEYWORD = "mosquito"
@@ -91,9 +122,9 @@ def build_chart(df: pd.DataFrame, state: str, picking: bool):
         showlegend=False,
         xaxis=dict(showgrid=False),
         yaxis=dict(title="Interest (0–100)", range=[0, 105]),
-        plot_bgcolor="#0e1117",
-        paper_bgcolor="#0e1117",
-        font=dict(color="#fafafa"),
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff",
+        font=dict(color="#111111"),
     )
     return fig
 
@@ -109,7 +140,7 @@ start = end - timedelta(days=days)
 timeframe = f"{start.strftime('%Y-%m-%d')} {end.strftime('%Y-%m-%d')}"
 
 selected_regions = st.sidebar.multiselect(
-    "Filter by Region",
+    "Filter by Zone",
     options=list(REGIONS.keys()),
     default=list(REGIONS.keys()),
 )
@@ -119,7 +150,7 @@ st.sidebar.caption("Data refreshes every hour. Powered by pytrends.")
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 st.title("🦟 Mosquito Google Trends — India")
-st.markdown(f"Showing **last {days} days** | Regions: {', '.join(selected_regions)}")
+st.markdown(f"Showing **last {days} days** | Zones: {', '.join(selected_regions)}")
 
 if not selected_regions:
     st.warning("Please select at least one region.")
@@ -155,7 +186,7 @@ st.markdown("---")
 
 # Charts per region
 for region in selected_regions:
-    st.subheader(f"🗺️ {region} India")
+    st.subheader(f"🗺️ Zone: {region}")
     region_states = [s for s in REGIONS[region] if s in all_data]
 
     if not region_states:
